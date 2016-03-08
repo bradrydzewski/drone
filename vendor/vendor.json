@@ -24,6 +24,16 @@
 			"revisionTime": "2015-09-04T14:24:56-07:00"
 		},
 		{
+			"path": "github.com/djherbis/atime",
+			"revision": "1cbd2345b73938341574c4bcbe79894daba829cc",
+			"revisionTime": "2016-02-10T19:16:47-08:00"
+		},
+		{
+			"path": "github.com/djherbis/fscache",
+			"revision": "41e0bd45d339bbb8e5d91b8979bad0779ce8a435",
+			"revisionTime": "2016-02-10T19:12:09-08:00"
+		},
+		{
 			"path": "github.com/docker/docker/pkg/stdcopy",
 			"revision": "9356c76d9f6e285e71f04df33ef7870455a42775",
 			"revisionTime": "2015-07-02T17:24:29-04:00"

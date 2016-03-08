@@ -7,16 +7,13 @@ all: gen build
 deps:
 	go get -u golang.org/x/tools/cmd/cover
 	go get -u golang.org/x/tools/cmd/vet
-	go get -u github.com/kr/vexp
 	go get -u github.com/eknkc/amber/...
 	go get -u github.com/eknkc/amber
 	go get -u github.com/jteeuwen/go-bindata/...
 	go get -u github.com/elazarl/go-bindata-assetfs/...
 	go get -u github.com/dchest/jsmin
-	go get -u github.com/franela/goblin
 	go get -u github.com/PuerkitoBio/goquery
 	go get -u github.com/russross/blackfriday
-	GO15VENDOREXPERIMENT=1 go get -u github.com/go-swagger/go-swagger/...
 
 gen: gen_static gen_template gen_migrations
 
