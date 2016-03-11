@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/drone/drone/shared/envconfig"
 	"github.com/drone/drone/store"
 	"github.com/drone/drone/store/migration"
 	_ "github.com/go-sql-driver/mysql"
@@ -16,20 +15,6 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 )
-
-// Load opens a new database connection with the specified driver
-// and connection string specified in the environment variables.
-func Load(env envconfig.Env) store.Store {
-	var (
-		driver = env.String("DATABASE_DRIVER", "sqlite3")
-		config = env.String("DATABASE_CONFIG", "drone.sqlite")
-	)
-
-	log.Infof("using database driver %s", driver)
-	log.Infof("using database config %s", config)
-
-	return New(driver, config)
-}
 
 func New(driver, config string) store.Store {
 	db := Open(driver, config)

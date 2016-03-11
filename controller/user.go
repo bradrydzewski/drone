@@ -11,6 +11,10 @@ import (
 	"github.com/drone/drone/store"
 )
 
+// @Title getUser
+// @Description returns the currently authenticated user.
+// @Success 200 {object} model.User
+// @Router /user [get]
 func GetSelf(c *gin.Context) {
 	c.IndentedJSON(200, session.User(c))
 }

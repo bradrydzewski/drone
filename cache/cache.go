@@ -22,9 +22,9 @@ func Set(c context.Context, key string, value interface{}) error {
 	return FromContext(c).Set(key, value)
 }
 
-// Default creates an in-memory cache with the default
+// New creates an in-memory cache with the default
 // 30 minute expiration period.
-func Default() Cache {
+func New() Cache {
 	return NewTTL(time.Minute * 30)
 }
 

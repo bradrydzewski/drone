@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/drone/drone/model"
-	"github.com/drone/drone/shared/envconfig"
 	"github.com/drone/drone/shared/httputil"
 	"github.com/drone/drone/shared/oauth2"
 
@@ -38,8 +37,7 @@ type Github struct {
 	GitSSH      bool
 }
 
-func Load(env envconfig.Env) *Github {
-	config := env.String("REMOTE_CONFIG", "")
+func Load(config string) *Github {
 
 	// parse the remote DSN configuration string
 	url_, err := url.Parse(config)
@@ -186,7 +184,7 @@ func (g *Github) Repo(u *model.User, owner, name string) (*model.Repo, error) {
 func (g *Github) Repos(u *model.User) ([]*model.RepoLite, error) {
 	client := NewClient(g.API, u.Token, g.SkipVerify)
 
-	all, err := GetAllRepos(client)
+	all, err := GetUserRepos(client)
 	if err != nil {
 		return nil, err
 	}

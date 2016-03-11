@@ -14,9 +14,7 @@ package template
 //go:generate sh -c "amberc amber/repo_activate.amber  > amber_gen/repo_activate.html"
 //go:generate sh -c "amberc amber/repo_config.amber    > amber_gen/repo_config.html"
 //go:generate sh -c "amberc amber/repo_secret.amber    > amber_gen/repo_secret.html"
-//go:generate sh -c "amberc amber/users.amber          > amber_gen/users.html"
 //go:generate sh -c "amberc amber/user.amber           > amber_gen/user.html"
-//go:generate sh -c "amberc amber/nodes.amber          > amber_gen/nodes.html"
 
 //go:generate go-bindata -pkg template -o template_gen.go amber_gen/
 

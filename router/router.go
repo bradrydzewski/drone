@@ -37,8 +37,6 @@ func Load(middleware ...gin.HandlerFunc) http.Handler {
 	{
 		settings.Use(session.MustUser())
 		settings.GET("/profile", controller.ShowUser)
-		settings.GET("/people", session.MustAdmin(), controller.ShowUsers)
-		settings.GET("/nodes", session.MustAdmin(), controller.ShowNodes)
 	}
 	repo := e.Group("/repos/:owner/:name")
 	{
@@ -75,14 +73,6 @@ func Load(middleware ...gin.HandlerFunc) http.Handler {
 		users.GET("/:login", controller.GetUser)
 		users.PATCH("/:login", controller.PatchUser)
 		users.DELETE("/:login", controller.DeleteUser)
-	}
-
-	nodes := e.Group("/api/nodes")
-	{
-		nodes.Use(session.MustAdmin())
-		nodes.GET("", controller.GetNodes)
-		nodes.POST("", controller.PostNode)
-		nodes.DELETE("/:node", controller.DeleteNode)
 	}
 
 	repos := e.Group("/api/repos/:owner/:name")

@@ -1,7 +1,7 @@
 package gogs
 
 import (
-       "crypto/tls"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/drone/drone/model"
-	"github.com/drone/drone/shared/envconfig"
 	"github.com/gogits/go-gogs-client"
 
 	log "github.com/Sirupsen/logrus"
@@ -22,8 +21,7 @@ type Gogs struct {
 	SkipVerify  bool
 }
 
-func Load(env envconfig.Env) *Gogs {
-	config := env.String("REMOTE_CONFIG", "")
+func Load(config string) *Gogs {
 
 	// parse the remote DSN configuration string
 	url_, err := url.Parse(config)
@@ -59,7 +57,7 @@ func (g *Gogs) Login(res http.ResponseWriter, req *http.Request) (*model.User, b
 		return nil, false, nil
 	}
 
-       client := NewGogsClient(g.URL, "", g.SkipVerify)
+	client := NewGogsClient(g.URL, "", g.SkipVerify)
 
 	// try to fetch drone token if it exists
 	var accessToken string
@@ -83,7 +81,7 @@ func (g *Gogs) Login(res http.ResponseWriter, req *http.Request) (*model.User, b
 		accessToken = token.Sha1
 	}
 
-       client = NewGogsClient(g.URL, accessToken, g.SkipVerify)
+	client = NewGogsClient(g.URL, accessToken, g.SkipVerify)
 	userInfo, err := client.GetUserInfo(username)
 	if err != nil {
 		return nil, false, err
@@ -182,7 +180,7 @@ func (g *Gogs) Netrc(u *model.User, r *model.Repo) (*model.Netrc, error) {
 	}
 	host, _, err := net.SplitHostPort(url_.Host)
 	if err == nil {
-		url_.Host=host
+		url_.Host = host
 	}
 	return &model.Netrc{
 		Login:    u.Token,
@@ -239,16 +237,16 @@ func (g *Gogs) Hook(r *http.Request) (*model.Repo, *model.Build, error) {
 
 // NewClient initializes and returns a API client.
 func NewGogsClient(url, token string, skipVerify bool) *gogs.Client {
-        sslClient := &http.Client{}
-        c := gogs.NewClient(url, token)
+	sslClient := &http.Client{}
+	c := gogs.NewClient(url, token)
 
-        if skipVerify {
-                sslClient.Transport = &http.Transport{
-                        TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-                }
-                c.SetHTTPClient(sslClient)
-        }
-        return c
+	if skipVerify {
+		sslClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		c.SetHTTPClient(sslClient)
+	}
+	return c
 }
 
 func (g *Gogs) String() string {

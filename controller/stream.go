@@ -1,16 +1,18 @@
 package controller
 
 import (
+	"bufio"
+	"encoding/json"
 	"io"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/docker/docker/pkg/stdcopy"
-	"github.com/drone/drone/engine"
-	"github.com/drone/drone/router/middleware/context"
+	"github.com/drone/drone/bus"
+	"github.com/drone/drone/model"
 	"github.com/drone/drone/router/middleware/session"
 	"github.com/drone/drone/store"
+	"github.com/drone/drone/stream"
 
 	log "github.com/Sirupsen/logrus"
 
@@ -20,14 +22,13 @@ import (
 // GetRepoEvents will upgrade the connection to a Websocket and will stream
 // event updates to the browser.
 func GetRepoEvents(c *gin.Context) {
-	engine_ := context.Engine(c)
 	repo := session.Repo(c)
 	c.Writer.Header().Set("Content-Type", "text/event-stream")
 
-	eventc := make(chan *engine.Event, 1)
-	engine_.Subscribe(eventc)
+	eventc := make(chan *bus.Event, 1)
+	bus.Subscribe(c, eventc)
 	defer func() {
-		engine_.Unsubscribe(eventc)
+		bus.Unsubscribe(c, eventc)
 		close(eventc)
 		log.Infof("closed event stream")
 	}()
@@ -39,11 +40,20 @@ func GetRepoEvents(c *gin.Context) {
 				log.Infof("nil event received")
 				return false
 			}
-			if event.Name == repo.FullName {
-				log.Debugf("received message %s", event.Name)
+
+			if event.Repo.FullName == repo.FullName {
+
+				var payload = struct {
+					model.Build
+					Jobs []*model.Job `json:"jobs"`
+				}{}
+				payload.Build = event.Build
+				payload.Jobs, _ = store.GetJobList(c, &event.Build)
+				data, _ := json.Marshal(&payload)
+
 				sse.Encode(w, sse.Event{
 					Event: "message",
-					Data:  string(event.Msg),
+					Data:  string(data),
 				})
 			}
 		case <-c.Writer.CloseNotify():
@@ -55,7 +65,6 @@ func GetRepoEvents(c *gin.Context) {
 
 func GetStream(c *gin.Context) {
 
-	engine_ := context.Engine(c)
 	repo := session.Repo(c)
 	buildn, _ := strconv.Atoi(c.Param("build"))
 	jobn, _ := strconv.Atoi(c.Param("number"))
@@ -74,21 +83,20 @@ func GetStream(c *gin.Context) {
 		c.AbortWithError(404, err)
 		return
 	}
-	node, err := store.GetNode(c, job.NodeID)
-	if err != nil {
-		log.Debugln("stream cannot get node.", err)
-		c.AbortWithError(404, err)
-		return
-	}
 
-	rc, err := engine_.Stream(build.ID, job.ID, node)
+	rc, wc, err := stream.Open(c, stream.ToKey(job.ID))
 	if err != nil {
 		c.AbortWithError(404, err)
 		return
 	}
 
 	defer func() {
-		rc.Close()
+		if wc != nil {
+			wc.Close()
+		}
+		if rc != nil {
+			rc.Close()
+		}
 	}()
 
 	go func() {
@@ -96,9 +104,20 @@ func GetStream(c *gin.Context) {
 		rc.Close()
 	}()
 
-	rw := &StreamWriter{c.Writer, 0}
-
-	stdcopy.StdCopy(rw, rw, rc)
+	var line int
+	var scanner = bufio.NewScanner(rc)
+	for scanner.Scan() {
+		line++
+		var err = sse.Encode(c.Writer, sse.Event{
+			Id:    strconv.Itoa(line),
+			Event: "message",
+			Data:  scanner.Text(),
+		})
+		if err != nil {
+			break
+		}
+		c.Writer.Flush()
+	}
 }
 
 type StreamWriter struct {

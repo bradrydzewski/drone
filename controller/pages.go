@@ -56,26 +56,6 @@ func ShowUser(c *gin.Context) {
 	})
 }
 
-func ShowUsers(c *gin.Context) {
-	user := session.User(c)
-	if !user.Admin {
-		c.AbortWithStatus(http.StatusForbidden)
-		return
-	}
-	users, _ := store.GetUserList(c)
-
-	token, _ := token.New(
-		token.CsrfToken,
-		user.Login,
-	).Sign(user.Hash)
-
-	c.HTML(200, "users.html", gin.H{
-		"User":  user,
-		"Users": users,
-		"Csrf":  token,
-	})
-}
-
 func ShowRepo(c *gin.Context) {
 	user := session.User(c)
 	repo := session.Repo(c)

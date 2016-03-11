@@ -23,7 +23,7 @@ func TestHelper(t *testing.T) {
 
 		g.BeforeEach(func() {
 			c = new(gin.Context)
-			ToContext(c, Default())
+			ToContext(c, New())
 
 			r = new(mock.Remote)
 			remote.ToContext(c, r)

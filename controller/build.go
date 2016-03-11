@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -9,14 +8,14 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/drone/drone/engine"
+	"github.com/drone/drone/queue"
 	"github.com/drone/drone/remote"
 	"github.com/drone/drone/shared/httputil"
 	"github.com/drone/drone/store"
+	"github.com/drone/drone/stream"
 	"github.com/gin-gonic/gin"
 
 	"github.com/drone/drone/model"
-	"github.com/drone/drone/router/middleware/context"
 	"github.com/drone/drone/router/middleware/session"
 )
 
@@ -80,10 +79,6 @@ func GetBuildLast(c *gin.Context) {
 func GetBuildLogs(c *gin.Context) {
 	repo := session.Repo(c)
 
-	// the user may specify to stream the full logs,
-	// or partial logs, capped at 2MB.
-	full, _ := strconv.ParseBool(c.Params.ByName("full"))
-
 	// parse the build number and job sequence number from
 	// the repquest parameter.
 	num, _ := strconv.Atoi(c.Params.ByName("number"))
@@ -108,39 +103,29 @@ func GetBuildLogs(c *gin.Context) {
 	}
 
 	defer r.Close()
-	if full {
-		io.Copy(c.Writer, r)
-	} else {
-		io.Copy(c.Writer, io.LimitReader(r, 2000000))
-	}
+	stream.Copy(c.Writer, r)
 }
 
 func DeleteBuild(c *gin.Context) {
-	engine_ := context.Engine(c)
-	repo := session.Repo(c)
+	// repo := session.Repo(c)
 
-	// parse the build number and job sequence number from
-	// the repquest parameter.
-	num, _ := strconv.Atoi(c.Params.ByName("number"))
-	seq, _ := strconv.Atoi(c.Params.ByName("job"))
+	// // parse the build number and job sequence number from
+	// // the repquest parameter.
+	// num, _ := strconv.Atoi(c.Params.ByName("number"))
+	// seq, _ := strconv.Atoi(c.Params.ByName("job"))
 
-	build, err := store.GetBuildNumber(c, repo, num)
-	if err != nil {
-		c.AbortWithError(404, err)
-		return
-	}
+	// build, err := store.GetBuildNumber(c, repo, num)
+	// if err != nil {
+	// 	c.AbortWithError(404, err)
+	// 	return
+	// }
 
-	job, err := store.GetJobNumber(c, build, seq)
-	if err != nil {
-		c.AbortWithError(404, err)
-		return
-	}
-	node, err := store.GetNode(c, job.NodeID)
-	if err != nil {
-		c.AbortWithError(404, err)
-		return
-	}
-	engine_.Cancel(build.ID, job.ID, node)
+	// job, err := store.GetJobNumber(c, build, seq)
+	// if err != nil {
+	// 	c.AbortWithError(404, err)
+	// 	return
+	// }
+	// engine_.Cancel(build.ID, job.ID, node)
 }
 
 func PostBuild(c *gin.Context) {
@@ -252,23 +237,23 @@ func PostBuild(c *gin.Context) {
 	// on status change notifications
 	last, _ := store.GetBuildLastBefore(c, repo, build.Branch, build.ID)
 
-	engine_ := context.Engine(c)
-	go engine_.Schedule(c.Copy(), &engine.Task{
-		User:      user,
-		Repo:      repo,
-		Build:     build,
-		BuildPrev: last,
-		Jobs:      jobs,
-		Keys:      key,
-		Netrc:     netrc,
-		Config:    string(raw),
-		Secret:    string(sec),
-		System: &model.System{
-			Link:      httputil.GetURL(c.Request),
-			Plugins:   strings.Split(os.Getenv("PLUGIN_FILTER"), " "),
-			Globals:   strings.Split(os.Getenv("PLUGIN_PARAMS"), " "),
-			Escalates: strings.Split(os.Getenv("ESCALATE_FILTER"), " "),
-		},
-	})
-
+	for _, job := range jobs {
+		queue.Publish(c, &queue.Work{
+			User:      user,
+			Repo:      repo,
+			Build:     build,
+			BuildLast: last,
+			Job:       job,
+			Keys:      key,
+			Netrc:     netrc,
+			Yaml:      string(raw),
+			YamlEnc:   string(sec),
+			System: &model.System{
+				Link:      httputil.GetURL(c.Request),
+				Plugins:   strings.Split(os.Getenv("PLUGIN_FILTER"), " "),
+				Globals:   strings.Split(os.Getenv("PLUGIN_PARAMS"), " "),
+				Escalates: strings.Split(os.Getenv("ESCALATE_FILTER"), " "),
+			},
+		})
+	}
 }

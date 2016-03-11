@@ -28,7 +28,7 @@ function JobViewModel(repo, build, job, status) {
 		})
 
 		Stream(repo, build, job, function(out){
-			buf.write(out);
+			buf.write(JSON.parse(out).data);
 		});
 	};
 
@@ -141,10 +141,20 @@ function Logs(repo, build, job) {
 
 	$.get( "/api/repos/"+repo+"/logs/"+build+"/"+job, function( data ) {
 
-		var convert = new Filter({stream: false, newline: false});
-		var escaped = convert.toHtml(escapeHTML(data));
+		// var convert = new Filter({stream: false, newline: false});
+		// var escaped = convert.toHtml(escapeHTML(data));
+		var logs = JSON.parse(data)
 
-		$( "#output" ).html( escaped );
+		var buf = new Drone.Buffer();
+		buf.start(document.getElementById("output"));
+		for (var i=0;i<logs.length;i++) {
+			var log = logs[i];
+			if (log && log.data) {
+				buf.write(log.data);
+			}
+		}
+
+		// $( "#output" ).html( escaped );
 	});
 }
 

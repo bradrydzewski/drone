@@ -15,7 +15,7 @@ func TestCache(t *testing.T) {
 		var c *gin.Context
 		g.BeforeEach(func() {
 			c = new(gin.Context)
-			ToContext(c, Default())
+			ToContext(c, New())
 		})
 
 		g.It("Should set and get an item", func() {

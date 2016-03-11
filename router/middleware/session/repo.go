@@ -140,9 +140,11 @@ func SetPerm() gin.HandlerFunc {
 			var err error
 			perm, err = cache.GetPerms(c, user, repo.Owner, repo.Name)
 			if err != nil {
-				perm.Pull = false
-				perm.Push = false
-				perm.Admin = false
+				perm = &model.Perm{
+					Pull:  false,
+					Push:  false,
+					Admin: false,
+				}
 
 				// debug
 				log.Errorf("Error fetching permission for %s %s",

@@ -10,10 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/drone/drone/engine"
 	"github.com/drone/drone/model"
+	"github.com/drone/drone/queue"
 	"github.com/drone/drone/remote"
-	"github.com/drone/drone/router/middleware/context"
 	"github.com/drone/drone/shared/httputil"
 	"github.com/drone/drone/shared/token"
 	"github.com/drone/drone/store"
@@ -203,23 +202,24 @@ func PostHook(c *gin.Context) {
 	// on status change notifications
 	last, _ := store.GetBuildLastBefore(c, repo, build.Branch, build.ID)
 
-	engine_ := context.Engine(c)
-	go engine_.Schedule(c.Copy(), &engine.Task{
-		User:      user,
-		Repo:      repo,
-		Build:     build,
-		BuildPrev: last,
-		Jobs:      jobs,
-		Keys:      key,
-		Netrc:     netrc,
-		Config:    string(raw),
-		Secret:    string(sec),
-		System: &model.System{
-			Link:      httputil.GetURL(c.Request),
-			Plugins:   strings.Split(os.Getenv("PLUGIN_FILTER"), " "),
-			Globals:   strings.Split(os.Getenv("PLUGIN_PARAMS"), " "),
-			Escalates: strings.Split(os.Getenv("ESCALATE_FILTER"), " "),
-		},
-	})
+	for _, job := range jobs {
+		queue.Publish(c, &queue.Work{
+			User:      user,
+			Repo:      repo,
+			Build:     build,
+			BuildLast: last,
+			Job:       job,
+			Keys:      key,
+			Netrc:     netrc,
+			Yaml:      string(raw),
+			YamlEnc:   string(sec),
+			System: &model.System{
+				Link:      httputil.GetURL(c.Request),
+				Plugins:   strings.Split(os.Getenv("PLUGIN_FILTER"), " "),
+				Globals:   strings.Split(os.Getenv("PLUGIN_PARAMS"), " "),
+				Escalates: strings.Split(os.Getenv("ESCALATE_FILTER"), " "),
+			},
+		})
+	}
 
 }

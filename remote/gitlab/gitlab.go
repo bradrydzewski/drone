@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/drone/drone/model"
-	"github.com/drone/drone/shared/envconfig"
 	"github.com/drone/drone/shared/httputil"
 	"github.com/drone/drone/shared/oauth2"
 	"github.com/drone/drone/shared/token"
@@ -23,20 +22,19 @@ const (
 )
 
 type Gitlab struct {
-	URL         		string
-	Client      		string
-	Secret      		string
-	AllowedOrgs 		[]string
-	CloneMode   		string
-	Open        		bool
-	PrivateMode 		bool
-	SkipVerify  		bool
-	HideArchives		bool
-	Search      		bool
+	URL          string
+	Client       string
+	Secret       string
+	AllowedOrgs  []string
+	CloneMode    string
+	Open         bool
+	PrivateMode  bool
+	SkipVerify   bool
+	HideArchives bool
+	Search       bool
 }
 
-func Load(env envconfig.Env) *Gitlab {
-	config := env.String("REMOTE_CONFIG", "")
+func Load(config string) *Gitlab {
 
 	url_, err := url.Parse(config)
 	if err != nil {
