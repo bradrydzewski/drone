@@ -1,10 +1,16 @@
-package model
+package store
 
-type RepoLite struct {
-	Owner    string `json:"owner"`
-	Name     string `json:"name"`
-	FullName string `json:"full_name"`
-	Avatar   string `json:"avatar_url"`
+type User struct {
+	ID     int64  `json:"id"         meddler:"user_id,pk"`
+	Login  string `json:"login"      meddler:"user_login"`
+	Token  string `json:"-"          meddler:"user_token"`
+	Secret string `json:"-"          meddler:"user_secret"`
+	Expiry int64  `json:"-"          meddler:"user_expiry"`
+	Email  string `json:"email"      meddler:"user_email"`
+	Avatar string `json:"avatar_url" meddler:"user_avatar"`
+	Active bool   `json:"active,"    meddler:"user_active"`
+	Admin  bool   `json:"admin,"     meddler:"user_admin"`
+	Hash   string `json:"-"          meddler:"user_hash"`
 }
 
 type Repo struct {
@@ -27,4 +33,11 @@ type Repo struct {
 	AllowDeploy bool   `json:"allow_deploys"     meddler:"repo_allow_deploys"`
 	AllowTag    bool   `json:"allow_tags"        meddler:"repo_allow_tags"`
 	Hash        string `json:"-"                 meddler:"repo_hash"`
+}
+
+type Key struct {
+	ID      int64  `json:"-"       meddler:"key_id,pk"`
+	RepoID  int64  `json:"-"       meddler:"key_repo_id"`
+	Public  string `json:"public"  meddler:"key_public"`
+	Private string `json:"private" meddler:"key_private"`
 }

@@ -28,7 +28,11 @@ gen_template:
 	go generate github.com/drone/drone/template
 
 gen_migrations:
-	go generate github.com/drone/drone/store/migration
+	go generate github.com/drone/drone/bus
+	go generate github.com/drone/drone/cache
+	go generate github.com/drone/drone/queue
+	go generate github.com/drone/drone/remote
+	go generate github.com/drone/drone/store/datastore/ddl
 
 build:
 	go build
