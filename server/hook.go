@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 
@@ -11,6 +12,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/drone/drone/model"
 	"github.com/drone/drone/remote"
+	"github.com/drone/drone/secret"
 	"github.com/drone/drone/shared/httputil"
 	"github.com/drone/drone/shared/token"
 	"github.com/drone/drone/store"
@@ -209,6 +211,25 @@ func PostHook(c *gin.Context) {
 	secs, err := store.GetMergedSecretList(c, repo)
 	if err != nil {
 		log.Debugf("Error getting secrets for %s#%d. %s", repo.FullName, build.Number, err)
+	}
+
+	if os.Getenv("DRONE_EXPERIMENTAL_SECRETS") == "true" {
+		secretStore := secret.NewStore(store.FromContext(c))
+		secrets, err := secretStore.GetSecretList(repo)
+		if err != nil {
+			log.Debugf("Error getting secrets for %s#%d. %s", repo.FullName, build.Number, err)
+		}
+		secs := &model.Secret{}
+		for _, item := range secrets {
+			secs = append(secs, &model.Secret{
+				Name:       item.Name,
+				Value:      item.Value,
+				Images:     []string{"drone/null"}, // hack, no match
+				Events:     item.Events,
+				SkipVerify: item.SkipVerify,
+				Conceal:    item.Conceal,
+			})
+		}
 	}
 
 	client := stomp.MustFromContext(c)
