@@ -77,9 +77,10 @@ func InitializeApplication(config2 config.Config) (application, error) {
 	secretStore := secret.New(db, encrypter)
 	globalSecretStore := global.New(db, encrypter)
 	buildManager := manager.New(buildStore, configService, convertService, corePubsub, logStore, logStream, netrcService, repositoryStore, scheduler, secretStore, globalSecretStore, statusService, stageStore, stepStore, system, userStore, webhookSender)
-	secretService := provideSecretPlugin(config2)
-	registryService := provideRegistryPlugin(config2)
-	runner := provideRunner(buildManager, secretService, registryService, config2)
+	poller, err := provideRunner(buildManager, config2)
+	if err != nil {
+		return application{}, err
+	}
 	hookService := provideHookService(client, renewer, config2)
 	licenseService := license.NewService(userStore, repositoryStore, buildStore, coreLicense)
 	organizationService := provideOrgService(client, renewer)
@@ -107,6 +108,6 @@ func InitializeApplication(config2 config.Config) (application, error) {
 	mainPprofHandler := providePprof(config2)
 	mux := provideRouter(server, webServer, mainRpcHandlerV1, mainRpcHandlerV2, mainHealthzHandler, metricServer, mainPprofHandler)
 	serverServer := provideServer(mux, config2)
-	mainApplication := newApplication(cronScheduler, reaper, datadog, runner, serverServer, userStore)
+	mainApplication := newApplication(cronScheduler, reaper, datadog, poller, serverServer, userStore)
 	return mainApplication, nil
 }

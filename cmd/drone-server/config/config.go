@@ -98,7 +98,7 @@ type (
 	}
 
 	Cleanup struct {
-		Disabled  bool         `envconfig:"DRONE_CLEANUP_DISABLED"`
+		Disabled bool          `envconfig:"DRONE_CLEANUP_DISABLED"`
 		Interval time.Duration `envconfig:"DRONE_CLEANUP_INTERVAL"         default:"24h"`
 		Running  time.Duration `envconfig:"DRONE_CLEANUP_DEADLINE_RUNNING" default:"24h"`
 		Pending  time.Duration `envconfig:"DRONE_CLEANUP_DEADLINE_PENDING" default:"24h"`
@@ -220,6 +220,7 @@ type (
 
 	// Runner provides the runner configuration.
 	Runner struct {
+		Clone      string            `envconfig:"DRONE_RUNNER_CLONE_IMAGE"`
 		Local      bool              `envconfig:"DRONE_RUNNER_LOCAL"`
 		Image      string            `envconfig:"DRONE_RUNNER_IMAGE"    default:"drone/controller:1"`
 		Platform   string            `envconfig:"DRONE_RUNNER_PLATFORM" default:"linux/amd64"`
@@ -230,18 +231,19 @@ type (
 		Machine    string            `envconfig:"DRONE_RUNNER_NAME"`
 		Capacity   int               `envconfig:"DRONE_RUNNER_CAPACITY" default:"2"`
 		Labels     map[string]string `envconfig:"DRONE_RUNNER_LABELS"`
-		Volumes    []string          `envconfig:"DRONE_RUNNER_VOLUMES"`
+		Volumes    map[string]string `envconfig:"DRONE_RUNNER_VOLUMES"`
 		Networks   []string          `envconfig:"DRONE_RUNNER_NETWORKS"`
 		Devices    []string          `envconfig:"DRONE_RUNNER_DEVICES"`
 		Privileged []string          `envconfig:"DRONE_RUNNER_PRIVILEGED_IMAGES"`
 		Environ    map[string]string `envconfig:"DRONE_RUNNER_ENVIRON"`
 		Limits     struct {
-			MemSwapLimit Bytes  `envconfig:"DRONE_LIMIT_MEM_SWAP"`
-			MemLimit     Bytes  `envconfig:"DRONE_LIMIT_MEM"`
-			ShmSize      Bytes  `envconfig:"DRONE_LIMIT_SHM_SIZE"`
-			CPUQuota     int64  `envconfig:"DRONE_LIMIT_CPU_QUOTA"`
-			CPUShares    int64  `envconfig:"DRONE_LIMIT_CPU_SHARES"`
-			CPUSet       string `envconfig:"DRONE_LIMIT_CPU_SET"`
+			MemSwapLimit Bytes    `envconfig:"DRONE_LIMIT_MEM_SWAP"`
+			MemLimit     Bytes    `envconfig:"DRONE_LIMIT_MEM"`
+			ShmSize      Bytes    `envconfig:"DRONE_LIMIT_SHM_SIZE"`
+			CPUQuota     int64    `envconfig:"DRONE_LIMIT_CPU_QUOTA"`
+			CPUShares    int64    `envconfig:"DRONE_LIMIT_CPU_SHARES"`
+			CPUPeriod    int64    `envconfig:"DRONE_LIMIT_CPU_PERIOD"`
+			CPUSet       []string `envconfig:"DRONE_LIMIT_CPU_SET"`
 		}
 	}
 

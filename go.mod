@@ -9,11 +9,12 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20180315120708-ccb8e960c48f
 	github.com/aws/aws-sdk-go v1.15.57
 	github.com/codegangsta/negroni v1.0.0 // indirect
-	github.com/coreos/go-semver v0.2.0
+	github.com/coreos/go-semver v0.3.0
 	github.com/dchest/authcookie v0.0.0-20120917135355-fbdef6e99866
 	github.com/dchest/uniuri v0.0.0-20160212164326-8902c56451e9
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/drone/drone-go v1.0.6
+	github.com/drone-runners/drone-runner-docker v1.4.0
+	github.com/drone/drone-go v1.2.1-0.20200326064413-195394da1018
 	github.com/drone/drone-runtime v1.1.1-0.20200623162453-61e33e2cab5d
 	github.com/drone/drone-ui v0.0.0-20200701170131-2b91a041998b
 	github.com/drone/drone-yaml v1.2.4-0.20200326192514-6f4d6dfb39e4
@@ -21,6 +22,7 @@ require (
 	github.com/drone/go-license v1.0.2
 	github.com/drone/go-login v1.0.4-0.20190311170324-2a4df4f242a2
 	github.com/drone/go-scm v1.7.1-0.20200621203823-3731ec1f1136
+	github.com/drone/runner-go v1.6.1-0.20200506182602-d2e6327ade15
 	github.com/drone/signal v1.0.0
 	github.com/dustin/go-humanize v1.0.0
 	github.com/go-chi/chi v3.3.3+incompatible
@@ -48,7 +50,7 @@ require (
 	github.com/hashicorp/vault/api v1.0.4 // indirect
 	github.com/jmoiron/sqlx v0.0.0-20180614180643-0dae4fefe7c0
 	github.com/joho/godotenv v1.3.0
-	github.com/kelseyhightower/envconfig v1.3.0
+	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.1.0
 	github.com/mattn/go-sqlite3 v1.9.0
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect

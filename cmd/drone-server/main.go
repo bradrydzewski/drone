@@ -23,11 +23,12 @@ import (
 	"github.com/drone/drone/cmd/drone-server/config"
 	"github.com/drone/drone/core"
 	"github.com/drone/drone/metric/sink"
-	"github.com/drone/drone/operator/runner"
-	"github.com/drone/drone/service/canceler/reaper"
 	"github.com/drone/drone/server"
+	"github.com/drone/drone/service/canceler/reaper"
 	"github.com/drone/drone/trigger/cron"
 	"github.com/drone/signal"
+
+	"github.com/drone/runner-go/poller"
 
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
@@ -131,12 +132,13 @@ func main() {
 	// runner is disabled (because nomad or kubernetes is enabled)
 	// then the goroutine exits immediately without error.
 	g.Go(func() (err error) {
-		if app.runner == nil {
+		if app.poller == nil {
 			return nil
 		}
 		logrus.WithField("threads", config.Runner.Capacity).
 			Infoln("main: starting the local build runner")
-		return app.runner.Start(ctx, config.Runner.Capacity)
+		app.poller.Poll(ctx, config.Runner.Capacity)
+		return nil
 	})
 
 	if err := g.Wait(); err != nil {
@@ -169,7 +171,7 @@ type application struct {
 	cron   *cron.Scheduler
 	reaper *reaper.Reaper
 	sink   *sink.Datadog
-	runner *runner.Runner
+	poller *poller.Poller
 	server *server.Server
 	users  core.UserStore
 }
@@ -179,7 +181,7 @@ func newApplication(
 	cron *cron.Scheduler,
 	reaper *reaper.Reaper,
 	sink *sink.Datadog,
-	runner *runner.Runner,
+	poller *poller.Poller,
 	server *server.Server,
 	users core.UserStore) application {
 	return application{
@@ -187,7 +189,7 @@ func newApplication(
 		cron:   cron,
 		sink:   sink,
 		server: server,
-		runner: runner,
+		poller: poller,
 		reaper: reaper,
 	}
 }
